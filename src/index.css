@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Elegan Alami — token tema (PRD 7.1 + DESIGN.md)
+   Nilai warna & huruf ditimpa saat runtime oleh src/lib/tema.js
+   sesuai pengaturan Admin (Editor Layout, F-52).
+   ============================================================ */
+@theme {
+  --color-hijau: #1F3D2B;      /* hijau tua: header, tombol utama, bagian gelap */
+  --color-daun: #3E6B4A;       /* hijau daun: aksen, grafik pemasukan */
+  --color-krem: #F5EFE3;       /* latar utama */
+  --color-gading: #FBF8F1;     /* permukaan kartu */
+  --color-emas: #C9A24A;       /* garis tipis, ikon, sorotan */
+  --color-emas-tua: #7A5C14;   /* teks emas di atas latar terang (kontras AA) */
+  --color-tinta: #1C1C1A;      /* teks utama */
+  --color-redup: #6B675C;      /* teks pendukung */
+  --color-garis: #E4DCCB;      /* garis & batas */
+  --color-bata: #A8432F;       /* Rusak, Konsekuensi, pengeluaran */
+  --color-kayu: #8A5A35;       /* kategori Pembangunan */
+  --color-batu: #4F6D7A;       /* kategori Kendaraan */
+
+  --font-judul: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-isi: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius-kartu: 1.25rem;
+  --radius-isian: 0.75rem;
+
+  --shadow-angkat: 0 8px 24px rgb(31 61 43 / 0.08);
+  --shadow-modal: 0 16px 40px rgb(31 61 43 / 0.14);
+
+  --ease-halus: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-kilau: kilau 1.6s ease-in-out infinite;
+  --animate-denyut-emas: denyut-emas 2.4s ease-in-out infinite;
+
+  @keyframes kilau {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes denyut-emas {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.9; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    overflow-x: clip; /* tidak pernah ada geser horizontal di HP (sticky tetap berfungsi) */
+    background-color: var(--color-krem);
+    color: var(--color-tinta);
+    font-family: var(--font-isi);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-judul);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-emas);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-emas) 35%, transparent);
+  }
+  button, [role="button"] { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@layer components {
+  /* Kartu Elegan Alami: gading + garis 1px + sudut 20px */
+  .kartu {
+    background: var(--color-gading);
+    border: 1px solid var(--color-garis);
+    border-radius: var(--radius-kartu);
+  }
+  /* Label kecil di atas judul bagian */
+  .label-bagian {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-emas-tua);
+  }
+  /* Garis emas tipis */
+  .garis-emas {
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-emas), color-mix(in oklab, var(--color-emas) 20%, transparent));
+  }
+  /* Kerangka (skeleton) berkilau */
+  .kerangka {
+    background: linear-gradient(90deg, var(--color-garis) 25%, var(--color-gading) 50%, var(--color-garis) 75%);
+    background-size: 200% 100%;
+    animation: var(--animate-kilau);
+  }
+}
+
+@utility tanpa-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@utility wadah {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (width >= 48rem) { padding-inline: 2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

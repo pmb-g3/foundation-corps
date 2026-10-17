@@ -1,0 +1,32 @@
+{
+  "name": "foundation-corps",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Website FOUNDATION Corps — Gontor Campus 3 (publik + panel admin). Backend: Google Apps Script.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/cek-ukuran.mjs",
+    "preview": "vite preview",
+    "cek-ukuran": "node scripts/cek-ukuran.mjs"
+  },
+  "dependencies": {
+    "date-fns": "4.4.0",
+    "jspdf": "4.2.1",
+    "jspdf-autotable": "5.0.9",
+    "lucide-react": "1.58.0",
+    "motion": "14.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.4"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

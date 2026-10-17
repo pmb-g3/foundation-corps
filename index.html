@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FOUNDATION Corps — Gontor Campus 3</title>
+    <meta name="description" content="Jadwal Subuh Berkah, program unggulan, dan data sektor Yayasan Gontor Campus 3." />
+    <meta name="theme-color" content="#1F3D2B" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
+    <!-- Sambungan awal ke server data & foto (mempercepat permintaan pertama) -->
+    <link rel="preconnect" href="https://script.google.com" />
+    <link rel="preconnect" href="https://script.googleusercontent.com" />
+    <link rel="preconnect" href="https://lh3.googleusercontent.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400..700&display=swap"
+    />
+
+    <!-- ⚙️ Alamat server (GAS_URL) diatur di public/config.js -->
+    <script src="./config.js"></script>
+    <script>
+      // Ambil data beranda SEBELUM aplikasi selesai dimuat (PRD 6.1).
+      (function () {
+        var c = window.FC_CONFIG || {};
+        if (!c.GAS_URL || c.GAS_URL.indexOf('XXXX') > -1) return;
+        if (location.hash && location.hash.indexOf('#/admin') === 0) return;
+        try {
+          window.__BOOT__ = fetch(c.GAS_URL + '?action=bootstrap', { redirect: 'follow' }).then(function (r) { return r.json(); });
+          window.__BOOT__.catch(function () {});
+        } catch (e) {}
+      })();
+      // Pramuat foto hero: dari kunjungan sebelumnya, atau foto drone bawaan (public/media).
+      (function () {
+        if (location.hash && location.hash.indexOf('#/') === 0 && location.hash.length > 2) return;
+        var id = '';
+        try {
+          var lama = JSON.parse(localStorage.getItem('fc_boot_v1') || 'null');
+          id = (lama && lama.data && lama.data.pengaturan && lama.data.pengaturan.hero && lama.data.pengaturan.hero.foto_id) || '';
+        } catch (e) {}
+        id = String(id || 'lokal:hero-drone');
+        var l = document.createElement('link');
+        l.rel = 'preload';
+        l.as = 'image';
+        if (id.indexOf('lokal:') === 0) {
+          var n = './media/' + id.slice(6) + '-';
+          l.setAttribute('imagesrcset', n + '480.webp 480w, ' + n + '1200.webp 1200w, ' + n + '1920.webp 1920w');
+          l.setAttribute('imagesizes', '100vw');
+          l.href = n + '1200.webp';
+        } else {
+          l.href = 'https://lh3.googleusercontent.com/d/' + id.split('|')[0] + '=w' + (innerWidth < 700 ? 1200 : 1920);
+        }
+        l.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(l);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Aktifkan JavaScript untuk membuka FOUNDATION Corps.</noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
