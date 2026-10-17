@@ -16,7 +16,9 @@ import { FotoStaf } from '../../components/ui/Gambar.jsx';
 import { Kerangka } from '../../components/ui/Kerangka.jsx';
 import { useToast } from '../../components/ui/Toast.jsx';
 import { TabelData } from '../../components/data/TabelData.jsx';
+import { anggotaSaatIni } from '../../lib/firqoh.js';
 import { HalamanAdmin } from './AdminLayout.jsx';
+import { AnggotaFirqoh } from './AnggotaFirqoh.jsx';
 
 function FormPengguna({ awal, tutup, selesai }) {
   const admin = useAdmin();
@@ -265,21 +267,7 @@ function TabFirqoh() {
   const [urut, setUrut] = useState(firqoh);
   const [proses, setProses] = useState('');
   useEffect(() => setUrut(firqoh), [firqoh]);
-  const siklus = (info?.siklus || []).find((s) => s.status === 'Diterapkan');
-  const anggota = (info?.anggota || []).filter((a) => siklus && a.siklus_id === siklus.id);
-  const stafPeta = Object.fromEntries((info?.staf || []).map((s) => [s.id, s]));
-
-  const pindah = async (a, firqohId) => {
-    setProses(a.id);
-    try {
-      await admin.simpan('Anggota_Firqoh', { id: a.id, firqoh_id: firqohId }, 'Anggota dipindahkan.');
-      admin.muatUlang();
-    } catch {
-      /* pesan tampil */
-    } finally {
-      setProses('');
-    }
-  };
+  const anggota = useMemo(() => anggotaSaatIni(info).baris, [info]);
 
   return (
     <div className="space-y-8">
@@ -321,43 +309,7 @@ function TabFirqoh() {
         </aside>
       </div>
 
-      {siklus && (
-        <section>
-          <h3 className="mb-3 text-xl">Anggota siklus berjalan</h3>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {firqoh
-              .filter((f) => f.aktif)
-              .map((f) => (
-                <div key={f.id} className="kartu p-4">
-                  <p className="mb-2 font-semibold">{f.nama_firqoh}</p>
-                  <ul className="space-y-1.5">
-                    {anggota
-                      .filter((a) => a.firqoh_id === f.id)
-                      .map((a) => (
-                        <li key={a.id} className="flex items-center gap-2 text-sm">
-                          <FotoStaf nama={stafPeta[a.staf_id]?.nama} fotoId={stafPeta[a.staf_id]?.foto_id} ukuran="sm" />
-                          <span className="flex-1 truncate">{stafPeta[a.staf_id]?.nama || '(staf terhapus)'}</span>
-                          <select
-                            aria-label="Pindah firqoh"
-                            value={f.id}
-                            disabled={proses === a.id}
-                            onChange={(e) => pindah(a, e.target.value)}
-                            className="min-h-9 rounded-lg border border-garis bg-krem px-2 text-xs"
-                          >
-                            {firqoh.map((o) => (
-                              <option key={o.id} value={o.id}>
-                                {o.nama_firqoh}
-                              </option>
-                            ))}
-                          </select>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
-          </div>
-        </section>
-      )}
+      <AnggotaFirqoh />
       <section>
         <h3 className="mb-3 text-xl">Data firqoh</h3>
         <TabelData sheet="Firqoh" onBerubah={admin.muatUlang} />

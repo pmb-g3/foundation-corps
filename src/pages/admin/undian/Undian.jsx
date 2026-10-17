@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as m from 'motion/react-m';
 import { AnimatePresence, LayoutGroup } from 'motion/react';
-import { CalendarRange, Check, Dices, ListRestart, RotateCcw, Save, Sparkles, Undo2, Users, X } from 'lucide-react';
+import { CalendarRange, Check, Dices, ListRestart, RotateCcw, Save, Sparkles, Undo2, Users, UsersRound, X } from 'lucide-react';
 import { cn } from '../../../lib/cn.js';
 import { useAdmin } from '../../../lib/admin.jsx';
 import { useData } from '../../../lib/data.jsx';
 import { tanggal, namaHari } from '../../../lib/format.js';
+import { navigasi, useRute } from '../../../lib/router.jsx';
+import { anggotaSaatIni } from '../../../lib/firqoh.js';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Dialog } from '../../../components/ui/Dialog.jsx';
 import { Input } from '../../../components/ui/Isian.jsx';
@@ -40,6 +42,16 @@ export default function Undian() {
   const staf = useMemo(() => (info?.staf || []).filter((s) => s.aktif).sort((a, b) => a.nama.localeCompare(b.nama)), [info]);
   const firqoh = useMemo(() => (info?.firqoh || []).filter((f) => f.aktif).sort((a, b) => (Number(a.urutan) || 99) - (Number(b.urutan) || 99)), [info]);
   const petaStaf = useMemo(() => Object.fromEntries(staf.map((s) => [s.id, s])), [staf]);
+  const { query } = useRute();
+  const isiAnggota = query.get('isi') === 'anggota';
+  // susunan anggota firqoh saat ini (input manual / hasil undian terakhir) sebagai penempatan
+  const dariAnggota = useMemo(
+    () =>
+      anggotaSaatIni(info)
+        .baris.filter((a) => petaStaf[a.staf_id] && firqoh.some((f) => f.id === a.firqoh_id))
+        .map((a, i) => ({ staf_id: a.staf_id, firqoh_id: a.firqoh_id, putaran_ke: i + 1 })),
+    [info, petaStaf, firqoh]
+  );
 
   const [penempatan, setPenempatan] = useState(null);
   const [terpilih, setTerpilih] = useState(null);
@@ -50,10 +62,15 @@ export default function Undian() {
   const [tglMulai, setTglMulai] = useState('');
   const [proses, setProses] = useState('');
   const [konfirmReset, setKonfirmReset] = useState(false);
+  const [konfirmAnggota, setKonfirmAnggota] = useState(false);
 
-  // pulihkan draf: simpanan lokal → draf server → kosong
+  // pulihkan draf: ?isi=anggota (dari tab Firqoh) → simpanan lokal → draf server → kosong
   useEffect(() => {
     if (!info || penempatan) return;
+    if (isiAnggota) {
+      navigasi('/admin/undian', { ganti: true });
+      return setPenempatan(dariAnggota);
+    }
     const sah = (x) => petaStaf[x.staf_id] && firqoh.some((f) => f.id === x.firqoh_id);
     try {
       const lokal = JSON.parse(localStorage.getItem(KUNCI_DRAF) || 'null');
@@ -72,7 +89,7 @@ export default function Undian() {
       );
     }
     setPenempatan([]);
-  }, [info, penempatan, petaStaf, firqoh]);
+  }, [info, penempatan, petaStaf, firqoh, isiAnggota, dariAnggota]);
 
   useEffect(() => {
     if (!penempatan) return;
@@ -112,6 +129,11 @@ export default function Undian() {
   const pindah = (stafId, firqohId) => setPenempatan((p) => p.map((x) => (x.staf_id === stafId ? { ...x, firqoh_id: firqohId } : x)));
   const keluarkan = (stafId) => setPenempatan((p) => p.filter((x) => x.staf_id !== stafId).map((x, i) => ({ ...x, putaran_ke: i + 1 })));
   const batalTerakhir = () => setPenempatan((p) => p.slice(0, -1));
+  const pakaiAnggota = () => {
+    setPenempatan(dariAnggota);
+    setTerpilih(null);
+    setKonfirmAnggota(false);
+  };
 
   const simpanDraf = async () => {
     setProses('draf');
@@ -254,6 +276,16 @@ export default function Undian() {
               <Button varian="hantu" ukuran="sm" ikon={ListRestart} onClick={() => setKonfirmReset(true)} disabled={!penempatan.length}>
                 Reset semua
               </Button>
+              <Button
+                varian="hantu"
+                ukuran="sm"
+                ikon={UsersRound}
+                onClick={() => (penempatan.length ? setKonfirmAnggota(true) : pakaiAnggota())}
+                disabled={!dariAnggota.length || !!terpilih}
+                title="Tanpa memutar roda: pakai anggota firqoh yang diisi di Pengguna & Staf → Firqoh"
+              >
+                Isi dari anggota firqoh
+              </Button>
             </div>
           </section>
 
@@ -388,6 +420,26 @@ export default function Undian() {
         }
       >
         <p className="text-sm text-redup">Semua staf kembali ke antrean roda.</p>
+      </Dialog>
+
+      <Dialog
+        buka={konfirmAnggota}
+        tutup={() => setKonfirmAnggota(false)}
+        judul="Ganti dengan anggota firqoh saat ini?"
+        lebar="sm"
+        kaki={
+          <>
+            <Button varian="hantu" onClick={() => setKonfirmAnggota(false)}>
+              Batal
+            </Button>
+            <Button onClick={pakaiAnggota}>Pakai anggota firqoh</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-redup">
+          Penempatan undian saat ini ({penempatan.length} staf) diganti dengan susunan anggota yang tersimpan di menu Pengguna & Staf → Firqoh ({dariAnggota.length} staf).
+          Staf yang belum masuk firqoh tetap menunggu di roda.
+        </p>
       </Dialog>
     </HalamanAdmin>
   );
