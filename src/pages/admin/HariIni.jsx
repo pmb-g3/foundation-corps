@@ -184,7 +184,7 @@ export default function HariIni() {
           <m.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="kartu flex flex-col p-5 md:p-6">
             <div className="flex flex-wrap items-start gap-2">
               <div className="flex-1">
-                <p className="label-bagian">Imam Subuh · Masjid Jami'</p>
+                <p className="label-bagian">Imam Subuh · Rumah Kita</p>
                 <h2 className="mt-1 text-3xl leading-tight">{j.imam?.nama || '–'}</h2>
               </div>
               {j.imam && <ChipStatus status={j.imam.status} />}

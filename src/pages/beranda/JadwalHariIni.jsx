@@ -117,7 +117,7 @@ export function JadwalHariIni({ jadwal }) {
               <FotoStaf nama={j.imam.nama} fotoId={j.imam.foto_id} ukuran="lg" />
               <div>
                 <p className="font-judul text-xl leading-tight text-tinta">{j.imam.nama}</p>
-                <p className="text-sm text-redup">Masjid Jami'</p>
+                <p className="text-sm text-redup">Rumah Kita</p>
               </div>
             </div>
           ) : (

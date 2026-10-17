@@ -4,7 +4,7 @@ import { cn } from '../../lib/cn.js';
 import { useAdmin } from '../../lib/admin.jsx';
 import { useAuth } from '../../lib/auth.jsx';
 import { navigasi, useRute } from '../../lib/router.jsx';
-import { inisial } from '../../lib/format.js';
+import { inisial, tambahHari } from '../../lib/format.js';
 import { SEKTOR } from '../../lib/sektor.js';
 import { Button, IkonTombol } from '../../components/ui/Button.jsx';
 import { Dialog } from '../../components/ui/Dialog.jsx';
@@ -218,8 +218,13 @@ function TabUrutanImam() {
   const [urut, setUrut] = useState(staf);
   const [proses, setProses] = useState(false);
   useEffect(() => setUrut(staf), [staf]);
-  const posisi = admin.info?.pengaturan?.imam_posisi_terakhir?.staf_id;
-  const berikut = urut.length ? urut[(urut.findIndex((s) => s.id === posisi) + 1) % urut.length] : null;
+  // "Terakhir" = imam hari ini, "Berikutnya" = imam besok (dari jadwal); tanpa jadwal → posisi terakhir siklus
+  const hari = admin.info?.hari_ini;
+  const jadwal = admin.info?.jadwal || [];
+  const imamHariIni = hari && jadwal.find((x) => x.tanggal === hari)?.imam?.id;
+  const imamBesok = hari && jadwal.find((x) => x.tanggal === tambahHari(hari, 1))?.imam?.id;
+  const posisi = imamHariIni || admin.info?.pengaturan?.imam_posisi_terakhir?.staf_id;
+  const berikut = (imamBesok && urut.find((s) => s.id === imamBesok)) || (urut.length ? urut[(urut.findIndex((s) => s.id === posisi) + 1) % urut.length] : null);
   const simpan = async () => {
     setProses(true);
     try {
@@ -244,12 +249,13 @@ function TabUrutanImam() {
             <FotoStaf nama={s.nama} fotoId={s.foto_id} ukuran="sm" />
             <span className="flex-1 truncate text-sm font-medium">{s.nama}</span>
             {s.id === posisi && <Lencana warna="emas">Terakhir</Lencana>}
+            {s.id === berikut?.id && s.id !== posisi && <Lencana warna="hijau">Besok</Lencana>}
           </div>
         )}
       />
       <div className="space-y-4 self-start">
       <aside className="kartu space-y-3 p-5">
-        <p className="text-sm text-redup">Imam bergiliran mengikuti urutan ini dan melanjutkan posisi terakhir di siklus berikutnya. Semua staf aktif bisa menjadi imam.</p>
+        <p className="text-sm text-redup">Imam bergiliran mengikuti urutan ini. <b className="text-tinta">Terakhir</b> = imam subuh hari ini, giliran berikutnya = imam besok. Semua staf aktif bisa menjadi imam.</p>
         {berikut && (
           <p className="text-sm">
             Giliran berikutnya: <b>{berikut.nama}</b>
