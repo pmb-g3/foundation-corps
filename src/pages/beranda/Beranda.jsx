@@ -10,7 +10,7 @@ import { JadwalHariIni } from './JadwalHariIni.jsx';
 import { ProgramUnggulan } from './ProgramUnggulan.jsx';
 import { PilihanSektor } from './PilihanSektor.jsx';
 import { KalenderKegiatan } from './KalenderKegiatan.jsx';
-import { Staf } from './Staf.jsx';
+import { StafMalas } from './StafMalas.jsx';
 
 const LAYOUT_BAWAAN = {
   urutan: ['hero', 'jadwal', 'sektor', 'kalender', 'staf'],
@@ -70,7 +70,7 @@ export default function Beranda({ pratinjauLayout }) {
     ),
     staf: (
       <Bagian key="staf" id="staf" label={teks('staf').label} judul={teks('staf').judul} onEdit={edit({ jenis: 'tabel', sheet: 'Staf', judul: 'Staf' })} className="pb-24">
-        <Staf staf={boot?.staf} varian={varian.staf} />
+        <StafMalas staf={boot?.staf} varian={varian.staf} />
       </Bagian>
     )
   };

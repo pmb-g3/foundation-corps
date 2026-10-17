@@ -28,6 +28,9 @@
         if (!c.GAS_URL || c.GAS_URL.indexOf('XXXX') > -1) return;
         if (location.hash && location.hash.indexOf('#/admin') === 0) return;
         try {
+          if (localStorage.getItem('fc_api_dev')) return; // pengembangan lokal: server tiruan
+        } catch (e) {}
+        try {
           window.__BOOT__ = fetch(c.GAS_URL + '?action=bootstrap', { redirect: 'follow' }).then(function (r) { return r.json(); });
           window.__BOOT__.catch(function () {});
         } catch (e) {}

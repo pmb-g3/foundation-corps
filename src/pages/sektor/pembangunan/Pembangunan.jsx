@@ -2,11 +2,12 @@ import { Construction, Hammer, LandPlot, PlugZap, Wallet, Zap } from 'lucide-rea
 import { Bagian } from '../../../components/layout/Bagian.jsx';
 import { SektorLayout } from '../SektorLayout.jsx';
 import { Showroom } from '../Showroom.jsx';
-import { RekapKeuangan } from '../RekapKeuangan.jsx';
 import { TambalSulam } from './TambalSulam.jsx';
 import { Proyek } from './Proyek.jsx';
 import { GrafikListrik } from './GrafikListrik.jsx';
 import { DenahBangunan } from './DenahBangunan.jsx';
+import { KeuanganMingguan } from './KeuanganMingguan.jsx';
+import { hariIniWib } from '../../../lib/format.js';
 
 const BAGIAN = [
   { id: 'tambal', label: 'Tambal Sulam', ikon: Hammer },
@@ -53,8 +54,8 @@ export default function Pembangunan({ sektor, data, edit }) {
       >
         <DenahBangunan rows={t.Bangunan} fotoDenah={data.pengaturan?.denah_bangunan?.foto_id || 'lokal:denah-bangunan'} />
       </Bagian>
-      <Bagian id="keuangan" label="Rekap" judul="Keuangan" onEdit={edit.tabel('Keuangan', 'Keuangan', { sektor: sektor.id })} className="pb-24">
-        <RekapKeuangan rows={t.Keuangan} sektorLabel={sektor.label} pisahKategori />
+      <Bagian id="keuangan" label="Tambal Sulam & Proyek" judul="Keuangan Mingguan" onEdit={edit.tabel('Keuangan', 'Keuangan', { sektor: sektor.id })} className="pb-24">
+        <KeuanganMingguan rows={t.Keuangan} patokan={data.pengaturan?.keuangan_pembangunan} hariIni={data.hari_ini || hariIniWib()} />
       </Bagian>
     </SektorLayout>
   );

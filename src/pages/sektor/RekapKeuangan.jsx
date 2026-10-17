@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { CalendarCheck } from 'lucide-react';
 import { cn } from '../../lib/cn.js';
 import { NAMA_BULAN, BULAN_PENDEK, rupiah, rupiahRingkas, tanggal, hariIniWib } from '../../lib/format.js';
 import { Segmen } from '../../components/ui/Segmen.jsx';
@@ -7,6 +8,7 @@ import { GrafikBatang } from '../../components/chart/GrafikBatang.jsx';
 import { KotakPesan } from '../../components/ui/Kerangka.jsx';
 import { TombolPdf } from '../../components/layout/TombolPdf.jsx';
 import { Button } from '../../components/ui/Button.jsx';
+import { infoMinggu, mingguBulan } from '../../lib/mingguan.js';
 
 const nama = (kunci) => `${NAMA_BULAN[Number(kunci.slice(5, 7)) - 1]} ${kunci.slice(0, 4)}`;
 const pendek = (kunci) => `${BULAN_PENDEK[Number(kunci.slice(5, 7)) - 1]} ${kunci.slice(2, 4)}`;
@@ -22,20 +24,22 @@ function enamBulanTerakhir(akhir) {
 /**
  * Rekap keuangan sektor — F-13 (Pertanian), F-34 (Kendaraan), F-45 (Pembangunan).
  * Tab Mingguan/Bulanan, grafik pemasukan vs pengeluaran, saldo, tabel rincian, unduh PDF.
+ * Mingguan: tutup buku setiap Rabu — minggu = Kamis s/d Rabu, masuk ke bulan tempat Rabu-nya.
  * pisahKategori (F-45): pengeluaran dipisah Tambal Sulam dan Proyek per minggu ke-berapa.
  */
 export function RekapKeuangan({ rows = [], sektorLabel, pisahKategori = false }) {
   const hariIni = hariIniWib();
   const [mode, setMode] = useState('mingguan');
+  const mingguIni = infoMinggu(hariIni);
+  const bulanBaris = (r) => (r.tanggal ? infoMinggu(r.tanggal).bulan : r.bulan);
   const bulanAda = useMemo(() => {
-    const s = new Set(rows.map((r) => r.bulan || String(r.tanggal).slice(0, 7)).filter(Boolean));
-    s.add(hariIni.slice(0, 7));
+    const s = new Set(rows.map(bulanBaris).filter(Boolean));
+    s.add(mingguIni.bulan);
     return [...s].sort().reverse();
-  }, [rows, hariIni]);
+  }, [rows, mingguIni.bulan]); // eslint-disable-line react-hooks/exhaustive-deps
   const [bulan, setBulan] = useState(bulanAda[0]);
   const [semua, setSemua] = useState(false);
 
-  const bulanBaris = (r) => r.bulan || String(r.tanggal).slice(0, 7);
   const enam = enamBulanTerakhir(hariIni.slice(0, 7));
   const periode = mode === 'mingguan' ? rows.filter((r) => bulanBaris(r) === bulan) : rows.filter((r) => enam.includes(bulanBaris(r)));
 
@@ -64,10 +68,10 @@ export function RekapKeuangan({ rows = [], sektorLabel, pisahKategori = false })
 
   const dataGrafik =
     mode === 'mingguan'
-      ? [1, 2, 3, 4, 5].map((w) => ({
-          label: `M${w}`,
-          sub: `Minggu ke-${w} · ${nama(bulan)}`,
-          nilai: nilaiDari(periode.filter((r) => Number(r.minggu_ke || Math.ceil(Number(String(r.tanggal).slice(8, 10)) / 7)) === w))
+      ? mingguBulan(bulan).map((w) => ({
+          label: `M${w.ke}`,
+          sub: `Minggu ke-${w.ke} dari ${w.dari} · ${tanggal(w.mulai, 'hariBulan')} – ${tanggal(w.selesai, 'hariBulan')}`,
+          nilai: nilaiDari(periode.filter((r) => r.tanggal && infoMinggu(r.tanggal).selesai === w.selesai))
         }))
       : enam.map((b) => ({ label: pendek(b), sub: nama(b), nilai: nilaiDari(rows.filter((r) => bulanBaris(r) === b)) }));
 
@@ -135,6 +139,14 @@ export function RekapKeuangan({ rows = [], sektorLabel, pisahKategori = false })
           <TombolPdf label="Unduh PDF rekap" siapkan={siapkanPdf} />
         </div>
       </div>
+
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-garis bg-krem/60 px-5 py-2.5 text-xs text-redup md:px-6">
+        <CalendarCheck className="size-4 text-emas-tua" aria-hidden />
+        <span>Tutup buku setiap <b className="font-semibold text-tinta">Rabu</b> (minggu = Kamis–Rabu).</span>
+        <span>
+          Minggu ini: <b className="font-semibold text-tinta">minggu ke-{mingguIni.ke} dari {mingguIni.dari}</b> {nama(mingguIni.bulan)} · {tanggal(mingguIni.mulai, 'hariBulan')} – {tanggal(mingguIni.selesai, 'hariBulan')}
+        </span>
+      </p>
 
       <dl className="grid grid-cols-3 divide-x divide-garis border-b border-garis">
         {[

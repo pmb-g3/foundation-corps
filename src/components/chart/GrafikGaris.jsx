@@ -33,6 +33,7 @@ export function GrafikGaris({ data, format = (v) => v, formatSumbu, warna = 'var
   const jalur = jalurHalus(terisi);
   const iMaks = sorotMaks && terisi.length ? nilai.indexOf(Math.max(...nilai.filter((v) => v !== null))) : -1;
   const fmtSumbu = formatSumbu || format;
+  const langkahLabel = Math.max(1, Math.ceil(data.length / Math.max(1, Math.floor(w / 46))));
 
   const dariPointer = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -78,11 +79,14 @@ export function GrafikGaris({ data, format = (v) => v, formatSumbu, warna = 'var
               </text>
             </g>
           ))}
-          {data.map((d, i) => (
-            <text key={d.label + i} x={x(i)} y={tinggi - 8} textAnchor="middle" className="fill-redup text-[11px]">
-              {d.label}
-            </text>
-          ))}
+          {data.map((d, i) =>
+            // label sumbu dijarangkan bila titik banyak (mis. puluhan minggu)
+            i % langkahLabel === 0 || (i === data.length - 1 && i % langkahLabel > langkahLabel / 2) ? (
+              <text key={d.label + i} x={x(i)} y={tinggi - 8} textAnchor="middle" className="fill-redup text-[11px]">
+                {d.label}
+              </text>
+            ) : null
+          )}
           {jalur && (
             <path
               d={jalur}

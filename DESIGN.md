@@ -60,6 +60,9 @@ Catatan aksesibilitas warna (diuji dengan validator palet):
 | Peta kolam di atas foto udara / denah otomatis (F-11) | `src/components/peta/PetaKolam.jsx`, `denahKolam.js` |
 | Denah bangunan berkategori (F-44) | `src/pages/sektor/pembangunan/DenahBangunan.jsx`, `src/lib/bangunan.js` |
 | Foto bawaan (`lokal:nama`) | `public/media/`, `src/lib/foto.js` |
+| Carousel melingkar program unggulan (F-03) | `src/components/ui/CarouselMelingkar.jsx` |
+| Tim staf 3 sektor + tombol WhatsApp (F-06) | `src/pages/beranda/Staf.jsx` |
+| Keuangan mingguan Tambal Sulam & Proyek (F-45) | `src/pages/sektor/pembangunan/KeuanganMingguan.jsx`, `src/lib/mingguan.js` |
 | Grafik batang & garis (SVG sendiri) | `src/components/chart/` |
 | Kalender (F-05, adaptasi ReUI) | `src/components/kalender/` |
 | Footer beam wordmark (F-07) | `src/components/layout/Footer.jsx`, `footer.css` |
