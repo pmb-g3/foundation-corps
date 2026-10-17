@@ -105,7 +105,7 @@ export default function HariIni() {
     >
       <BannerContoh />
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Select value={tgl || ''} onChange={(e) => setTgl(e.target.value)} aria-label="Tanggal yang ditandai" className="w-64">
+        <Select value={tgl || ''} onChange={(e) => setTgl(e.target.value)} aria-label="Tanggal yang ditandai" className="w-full sm:w-80">
           {pilihanTanggal.map((t, i) => (
             <option key={t} value={t}>
               {i === 0 ? 'Hari ini · ' : i === 1 ? 'Kemarin · ' : ''}

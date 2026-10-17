@@ -20,6 +20,7 @@ import { anggotaSaatIni } from '../../lib/firqoh.js';
 import { HalamanAdmin } from './AdminLayout.jsx';
 import { AnggotaFirqoh } from './AnggotaFirqoh.jsx';
 import { UndurJadwal } from './UndurJadwal.jsx';
+import { AturImam } from './AturImam.jsx';
 
 function FormPengguna({ awal, tutup, selesai }) {
   const admin = useAdmin();
@@ -232,7 +233,7 @@ function TabUrutanImam() {
     }
   };
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <DaftarUrut
         items={urut}
         onUbah={setUrut}
@@ -246,7 +247,8 @@ function TabUrutanImam() {
           </div>
         )}
       />
-      <aside className="kartu space-y-3 self-start p-5">
+      <div className="space-y-4 self-start">
+      <aside className="kartu space-y-3 p-5">
         <p className="text-sm text-redup">Imam bergiliran mengikuti urutan ini dan melanjutkan posisi terakhir di siklus berikutnya. Semua staf aktif bisa menjadi imam.</p>
         {berikut && (
           <p className="text-sm">
@@ -257,6 +259,8 @@ function TabUrutanImam() {
           Simpan urutan
         </Button>
       </aside>
+      <AturImam urut={staf} />
+      </div>
     </div>
   );
 }

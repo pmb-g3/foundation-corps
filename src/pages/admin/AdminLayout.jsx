@@ -212,7 +212,8 @@ export function HalamanAdmin({ label, judul, keterangan, aksi, children, classNa
   return (
     <div className={cn('mx-auto w-full max-w-7xl', className)}>
       <div className="mb-6 flex flex-wrap items-end gap-x-6 gap-y-3 md:mb-8">
-        <div className="min-w-0 flex-1">
+        {/* HP: judul selebar layar, tombol aksi turun ke baris berikutnya */}
+        <div className="min-w-0 basis-full md:basis-0 md:flex-1">
           {label && <p className="label-bagian">{label}</p>}
           <h1 className="mt-1 text-3xl leading-tight text-tinta md:text-[2.6rem]">{judul}</h1>
           {keterangan && <p className="mt-2 max-w-2xl text-sm text-redup md:text-base">{keterangan}</p>}
