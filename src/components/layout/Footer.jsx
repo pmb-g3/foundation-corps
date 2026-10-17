@@ -71,7 +71,7 @@ export function Footer() {
     {
       judul: 'Beranda',
       tautan: [
-        { label: 'Jadwal Hari Ini', href: '#/?ke=jadwal' },
+        { label: 'Jadwal Subuh Berkah', href: '#/?ke=jadwal' },
         { label: 'Program Unggulan', href: '#/?ke=program' },
         { label: 'Kalender', href: '#/?ke=kalender' },
         { label: 'Staf', href: '#/?ke=staf' },

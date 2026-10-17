@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { apiGet, apiSiap, ambilBootAwal } from './api.js';
 import { terapkanTema } from './tema.js';
+import { tanggalTampil, waktuWIB } from './jadwalTampil.js';
 
 const DataContext = createContext(null);
 const KUNCI = 'fc_boot_v1';
@@ -81,15 +82,25 @@ export function DataProvider({ children }) {
     muat();
   }, [muat]);
 
-  // ganti hari (00.00 WIB) → ambil ulang jadwal saat tab kembali aktif
+  // ganti hari (00.00 WIB) atau ganti jadwal beranda (06.00 WIB) → ambil ulang.
+  // Dicek tiap menit selama tab terlihat dan saat tab kembali aktif; percobaan ulang paling cepat 2 menit.
+  const cobaTerakhir = useRef(0);
   useEffect(() => {
     const cek = () => {
       if (document.visibilityState !== 'visible' || !boot) return;
-      const hariIni = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
-      if (boot.hari_ini && boot.hari_ini !== hariIni) muat();
+      const kini = waktuWIB();
+      const tampil = boot.jadwal?.tanggal_tampil;
+      const usang = (boot.hari_ini && boot.hari_ini !== kini.tanggal) || (tampil && tampil !== tanggalTampil(boot.jadwal.jam_ganti));
+      if (!usang || Date.now() - cobaTerakhir.current < 120000) return;
+      cobaTerakhir.current = Date.now();
+      muat();
     };
     document.addEventListener('visibilitychange', cek);
-    return () => document.removeEventListener('visibilitychange', cek);
+    const t = setInterval(cek, 60000);
+    return () => {
+      document.removeEventListener('visibilitychange', cek);
+      clearInterval(t);
+    };
   }, [boot, muat]);
 
   useEffect(() => {

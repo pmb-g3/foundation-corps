@@ -117,7 +117,7 @@ export function Hero() {
             onClick={() => document.getElementById('jadwal')?.scrollIntoView({ behavior: kurangi ? 'auto' : 'smooth' })}
             className="inline-flex min-h-12 items-center gap-2 rounded-full bg-gading px-5 text-sm font-semibold text-hijau transition-colors hover:bg-white"
           >
-            Jadwal hari ini
+            Jadwal Subuh Berkah
             <ArrowDown className="size-4" aria-hidden />
           </button>
           {boot?.hari_ini && (

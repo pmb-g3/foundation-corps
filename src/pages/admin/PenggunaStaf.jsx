@@ -19,6 +19,7 @@ import { TabelData } from '../../components/data/TabelData.jsx';
 import { anggotaSaatIni } from '../../lib/firqoh.js';
 import { HalamanAdmin } from './AdminLayout.jsx';
 import { AnggotaFirqoh } from './AnggotaFirqoh.jsx';
+import { UndurJadwal } from './UndurJadwal.jsx';
 
 function FormPengguna({ awal, tutup, selesai }) {
   const admin = useAdmin();
@@ -310,6 +311,7 @@ function TabFirqoh() {
       </div>
 
       <AnggotaFirqoh />
+      <UndurJadwal />
       <section>
         <h3 className="mb-3 text-xl">Data firqoh</h3>
         <TabelData sheet="Firqoh" onBerubah={admin.muatUlang} />

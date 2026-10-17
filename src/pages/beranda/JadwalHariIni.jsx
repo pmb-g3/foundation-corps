@@ -1,6 +1,7 @@
 import * as m from 'motion/react-m';
-import { CircleCheck, CircleAlert, CupSoda, Moon, Users } from 'lucide-react';
+import { CalendarClock, CircleCheck, CircleAlert, CupSoda, Moon, Sunrise, Users } from 'lucide-react';
 import { tanggal } from '../../lib/format.js';
+import { susunJadwal } from '../../lib/jadwalTampil.js';
 import { hijriah } from '../../lib/hijriah.js';
 import { bergiliran, muncul, saatTerlihat } from '../../lib/motion.jsx';
 import { FotoStaf } from '../../components/ui/Gambar.jsx';
@@ -14,26 +15,31 @@ function StatusHari({ status }) {
   return null;
 }
 
-function siapkanPdf(jadwal) {
-  const baris = [jadwal.hari_ini, jadwal.besok].filter(Boolean).map((j) => [
+function siapkanPdf({ utama, berikut }) {
+  const baris = [utama, berikut].filter(Boolean).map((j) => [
     tanggal(j.tanggal),
-    j.firqoh ? j.firqoh.nama + (j.jenis === 'Konsekuensi' ? ' (Konsekuensi)' : '') : '–',
+    j.firqoh ? j.firqoh.nama + (j.jenis === 'Konsekuensi' ? ' (Konsekuensi)' : '') : j.libur ? 'Ditiadakan' + (j.libur.alasan ? ` (${j.libur.alasan})` : '') : '–',
     j.firqoh ? j.firqoh.anggota.map((a) => a.nama).join(', ') : '–',
     j.imam ? j.imam.nama : '–',
     j.pj_minuman_siang?.length ? j.pj_minuman_siang.map((p) => p.nama).join(', ') : '–'
   ]);
   return {
     judul: 'Jadwal Subuh Berkah',
-    subjudul: `${tanggal(jadwal.hari_ini.tanggal)} · ${hijriah(jadwal.hari_ini.tanggal)}`,
+    subjudul: `${tanggal(utama.tanggal)} · ${hijriah(utama.tanggal)}`,
     tabel: [{ kepala: [['Tanggal', 'Firqoh', 'Anggota', 'Imam Subuh', 'PJ Minuman Siang']], badan: baris }],
-    namaBerkas: `jadwal-subuh-${jadwal.hari_ini.tanggal}`,
+    namaBerkas: `jadwal-subuh-${utama.tanggal}`,
     lanskap: true
   };
 }
 
-/** F-02 Jadwal hari ini: firqoh + anggota, imam, konsekuensi, PJ Minuman Siang, pratinjau besok. */
+/**
+ * F-02 Jadwal Subuh Berkah: firqoh + anggota, imam, konsekuensi, PJ Minuman Siang, pratinjau hari berikutnya.
+ * Menampilkan jadwal ESOK hari agar staf bisa mengecek sehari sebelumnya; berganti tiap pukul 06.00 WIB
+ * (setelah Subuh Berkah). Sebelum 06.00 yang tampil masih subuh hari ini.
+ */
 export function JadwalHariIni({ jadwal }) {
-  if (!jadwal) {
+  const susun = susunJadwal(jadwal);
+  if (!susun) {
     return (
       <div className="kartu space-y-4 p-6">
         <Kerangka className="h-6 w-40" />
@@ -42,17 +48,19 @@ export function JadwalHariIni({ jadwal }) {
       </div>
     );
   }
-  const j = jadwal.hari_ini;
-  const b = jadwal.besok;
+  const { utama: j, berikut: b, esok, jamGanti } = susun;
 
   return (
     <m.article variants={muncul} {...saatTerlihat} className="kartu overflow-hidden">
       <header className="flex items-start gap-3 border-b border-garis px-5 py-4 md:px-6">
         <div className="min-w-0 flex-1">
+          <Lencana warna={esok ? 'gelap' : 'emas'} ikon={esok ? CalendarClock : Sunrise} className="mb-2">
+            {esok ? 'Jadwal besok' : 'Subuh hari ini'}
+          </Lencana>
           <p className="font-judul text-xl text-tinta md:text-2xl">{tanggal(j.tanggal)}</p>
           <p className="mt-0.5 text-sm text-emas-tua">{hijriah(j.tanggal)}</p>
         </div>
-        <TombolPdf label="Unduh PDF jadwal" siapkan={() => siapkanPdf(jadwal)} />
+        <TombolPdf label="Unduh PDF jadwal" siapkan={() => siapkanPdf(susun)} />
       </header>
 
       <div className="grid gap-px bg-garis md:grid-cols-[1.35fr_1fr]">
@@ -83,6 +91,13 @@ export function JadwalHariIni({ jadwal }) {
                 ))}
                 {!j.firqoh.anggota.length && <li className="text-sm text-redup">Anggota belum ditetapkan.</li>}
               </m.ul>
+            </>
+          ) : j.libur ? (
+            <>
+              <h3 className="mt-2 text-[1.7rem] leading-tight text-tinta">Ditiadakan</h3>
+              <p className="mt-2 rounded-xl bg-emas/12 px-3 py-2 text-sm text-tinta">
+                Subuh Berkah {esok ? 'besok' : 'hari ini'} ditiadakan{j.libur.alasan ? ` (${j.libur.alasan})` : ''}. Giliran firqoh diundur ke hari berikutnya.
+              </p>
             </>
           ) : (
             <p className="mt-3 text-sm text-redup">Belum ada jadwal. Menunggu undian berikutnya.</p>
@@ -119,16 +134,19 @@ export function JadwalHariIni({ jadwal }) {
         </section>
       </div>
 
-      {/* Pratinjau besok */}
+      {/* Pratinjau hari berikutnya */}
       {b && (
         <footer className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-krem/60 px-5 py-3 text-sm md:px-6">
-          <span className="font-semibold text-hijau">Besok</span>
+          <span className="font-semibold text-hijau">{esok ? 'Lusa' : 'Besok'}</span>
           <span className="text-redup">{tanggal(b.tanggal, 'hariBulan')}</span>
-          <span className="text-tinta">{b.firqoh ? b.firqoh.nama : 'Belum ada jadwal'}</span>
+          <span className="text-tinta">{b.firqoh ? b.firqoh.nama : b.libur ? 'Subuh Berkah ditiadakan' : 'Belum ada jadwal'}</span>
           {b.jenis === 'Konsekuensi' && <Lencana warna="bata">Konsekuensi</Lencana>}
           {b.imam && <span className="text-redup">· Imam {b.imam.nama}</span>}
         </footer>
       )}
+      <p className="border-t border-garis px-5 py-2 text-xs text-redup md:px-6">
+        Berganti ke jadwal hari berikutnya setiap pukul {String(jamGanti).padStart(2, '0')}.00 WIB, setelah Subuh Berkah.
+      </p>
     </m.article>
   );
 }

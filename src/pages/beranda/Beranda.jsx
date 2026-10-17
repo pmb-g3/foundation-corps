@@ -7,6 +7,7 @@ import { useRute } from '../../lib/router.jsx';
 import { Bagian } from '../../components/layout/Bagian.jsx';
 import { Hero } from './Hero.jsx';
 import { JadwalHariIni } from './JadwalHariIni.jsx';
+import { susunJadwal } from '../../lib/jadwalTampil.js';
 import { ProgramUnggulan } from './ProgramUnggulan.jsx';
 import { PilihanSektor } from './PilihanSektor.jsx';
 import { KalenderKegiatan } from './KalenderKegiatan.jsx';
@@ -18,8 +19,11 @@ const LAYOUT_BAWAAN = {
   varian: { program: 'carousel', sektor: 'bento', staf: 'grid' }
 };
 
+// label bawaan bagian jadwal mengikuti jadwal yang tampil (besok / subuh hari ini sebelum 06.00)
+const LABEL_JADWAL_BAWAAN = ['Hari Ini', 'Jadwal Besok', 'Subuh Hari Ini'];
+
 const TEKS_BAWAAN = {
-  jadwal: { label: 'Hari Ini', judul: 'Subuh Berkah' },
+  jadwal: { label: 'Jadwal Besok', judul: 'Subuh Berkah' },
   sektor: { label: 'Sektor', judul: 'Data Sektor' },
   kalender: { label: 'Kalender', judul: 'Kegiatan' },
   staf: { label: 'Staf', judul: 'Staf Yayasan' }
@@ -33,7 +37,11 @@ export default function Beranda({ pratinjauLayout }) {
   const { query } = useRute();
   const layout = pratinjauLayout || { ...LAYOUT_BAWAAN, ...(pengaturan.layout || {}) };
   const varian = { ...LAYOUT_BAWAAN.varian, ...(layout.varian || {}) };
-  const teks = (k) => ({ ...TEKS_BAWAAN[k], ...((pengaturan.teks_bagian || {})[k] || {}) });
+  const teks = (k) => {
+    const t = { ...TEKS_BAWAAN[k], ...((pengaturan.teks_bagian || {})[k] || {}) };
+    if (k === 'jadwal' && LABEL_JADWAL_BAWAAN.includes(t.label)) t.label = susunJadwal(boot?.jadwal)?.esok === false ? 'Subuh Hari Ini' : 'Jadwal Besok';
+    return t;
+  };
   const edit = (target) => (editor.bisa() ? () => editor.buka({ ...target, setelahSimpan: muatUlang }) : undefined);
 
   // tautan footer "#/?ke=kalender" → gulir ke bagian itu

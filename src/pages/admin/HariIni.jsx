@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as m from 'motion/react-m';
 import { AnimatePresence } from 'motion/react';
-import { CircleCheck, CircleAlert, Clock, History, MapPin, Moon, Radio, RotateCcw, Users, CupSoda, CalendarRange, MessageCircle } from 'lucide-react';
+import { CalendarArrowDown, CalendarX2, CircleCheck, CircleAlert, Clock, History, MapPin, Moon, Radio, RotateCcw, Users, CupSoda, CalendarRange, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/cn.js';
 import { useAdmin } from '../../lib/admin.jsx';
 import { useData } from '../../lib/data.jsx';
+import { navigasi } from '../../lib/router.jsx';
 import { tanggal, namaHari, jam, tambahHari } from '../../lib/format.js';
 import { bergiliran, muncul } from '../../lib/motion.jsx';
 import { Button } from '../../components/ui/Button.jsx';
@@ -133,9 +134,14 @@ export default function HariIni() {
                 <h2 className="mt-1 text-3xl leading-tight">{j.firqoh?.nama || '–'}</h2>
               </div>
               {j.jenis === 'Konsekuensi' && <Lencana warna="bata">Konsekuensi</Lencana>}
-              <ChipStatus status={j.status} />
+              {j.libur ? <Lencana warna="emas" ikon={CalendarX2}>Ditiadakan</Lencana> : <ChipStatus status={j.status} />}
             </div>
             {j.konsekuensi && <p className="mt-2 text-sm text-bata">{j.konsekuensi.alasan}</p>}
+            {j.libur && (
+              <p className="mt-3 rounded-xl bg-emas/12 px-3 py-2 text-sm text-tinta">
+                Subuh Berkah hari ini ditiadakan{j.libur.alasan ? ` (${j.libur.alasan})` : ''}. Jadwal firqoh sudah diundur tanpa konsekuensi.
+              </p>
+            )}
             <p className="mt-5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-redup">
               <Users className="size-3.5" aria-hidden /> {j.firqoh?.anggota.length || 0} anggota bertugas
             </p>
@@ -158,6 +164,15 @@ export default function HariIni() {
                 Belum
               </Button>
             </div>
+            {j.firqoh && (!j.status || j.status === 'Terjadwal') && tgl >= hari && (
+              <button
+                type="button"
+                onClick={() => navigasi(`/admin/pengguna?tab=firqoh&undur=${tgl}`)}
+                className="mt-3 inline-flex items-center gap-1.5 self-center text-xs font-semibold text-emas-tua underline underline-offset-2 hover:text-hijau"
+              >
+                <CalendarArrowDown className="size-3.5" aria-hidden /> Tidak ada Subuh Berkah? Undurkan tanpa konsekuensi
+              </button>
+            )}
             {j.status && j.status !== 'Terjadwal' && (
               <button type="button" onClick={() => klik('firqoh', 'Batal')} className="mt-3 inline-flex items-center gap-1.5 self-center text-xs font-semibold text-redup underline underline-offset-2 hover:text-hijau">
                 <RotateCcw className="size-3.5" aria-hidden /> Batalkan tanda (undo)
@@ -213,16 +228,22 @@ export default function HariIni() {
           </h2>
           <ul className="mt-4 space-y-2">
             {mendatang.map((x) => (
-              <li key={x.tanggal} className={cn('flex items-center gap-3 rounded-xl px-3 py-2.5', x.jenis === 'Konsekuensi' ? 'bg-bata/8' : 'bg-krem/80')}>
+              <li key={x.tanggal} className={cn('flex items-center gap-3 rounded-xl px-3 py-2.5', x.jenis === 'Konsekuensi' ? 'bg-bata/8' : x.libur ? 'bg-emas/12' : 'bg-krem/80')}>
                 <div className="w-12 text-center">
                   <p className="text-[0.65rem] font-semibold uppercase text-redup">{namaHari(x.tanggal).slice(0, 3)}</p>
                   <p className="font-judul text-xl leading-none">{Number(x.tanggal.slice(8, 10))}</p>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{x.firqoh?.nama || 'Belum ada jadwal'}</p>
+                  <p className="truncate font-medium">{x.firqoh?.nama || (x.libur ? 'Subuh Berkah ditiadakan' : 'Belum ada jadwal')}</p>
                   <p className="truncate text-xs text-redup">Imam: {x.imam?.nama || '–'}</p>
                 </div>
-                {x.jenis === 'Konsekuensi' ? <Lencana warna="bata">Konsekuensi</Lencana> : x.firqoh ? <Lencana warna="netral">Terjadwal</Lencana> : null}
+                {x.jenis === 'Konsekuensi' ? (
+                  <Lencana warna="bata">Konsekuensi</Lencana>
+                ) : x.libur ? (
+                  <Lencana warna="emas">Diundur</Lencana>
+                ) : x.firqoh ? (
+                  <Lencana warna="netral">Terjadwal</Lencana>
+                ) : null}
               </li>
             ))}
             {!mendatang.length && <li className="text-sm text-redup">Belum ada jadwal mendatang.</li>}
