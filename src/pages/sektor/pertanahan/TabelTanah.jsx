@@ -46,15 +46,25 @@ function tampilNilai(r, k) {
   if (k.kunci === 'status') return <Lencana warna={WARNA_STATUS_DOKUMEN[v]}>{v}</Lencana>;
   if (k.kunci === 'luas_m2') return angka(v);
   if (k.kunci === 'luas_ru') return v === null ? '–' : angka(v, 1);
-  if (k.kunci === 'harga_rp_per_ru' || k.kunci === 'nilai_perolehan') return v === null || v === '' ? '–' : angka(Math.round(v));
+  if (k.kunci === 'harga_rp_per_ru') return teksHarga(r);
+  if (k.kunci === 'nilai_perolehan') return v === null || v === '' ? '–' : angka(Math.round(v));
   if (k.kunci === 'tanggal_penerimaan') return v ? tanggal(v, 'pendek') : '–';
   return v === null || v === undefined || v === '' ? '–' : String(v);
+}
+
+/** Harga per ru; bila kosong tampilkan keterangannya (Wakaf, dll.), bila keduanya ada digabung. */
+function teksHarga(r) {
+  const v = r.harga_rp_per_ru;
+  const nilai = v === null || v === '' || v === undefined ? '' : angka(Math.round(v));
+  if (nilai && r.keterangan_harga) return `${nilai} (${r.keterangan_harga})`;
+  return nilai || r.keterangan_harga || '–';
 }
 
 function teksPdf(r, k) {
   const v = r[k.kunci];
   if (k.kunci === 'luas_ru') return v === null ? '–' : angka(v, 1);
-  if (['luas_m2', 'harga_rp_per_ru', 'nilai_perolehan'].includes(k.kunci)) return v === null || v === '' ? '–' : angka(Math.round(v));
+  if (k.kunci === 'harga_rp_per_ru') return teksHarga(r);
+  if (['luas_m2', 'nilai_perolehan'].includes(k.kunci)) return v === null || v === '' ? '–' : angka(Math.round(v));
   if (k.kunci === 'tanggal_penerimaan') return v ? tanggal(v, 'pendek') : '–';
   return v === null || v === undefined || v === '' ? '–' : String(v);
 }

@@ -6,7 +6,8 @@ const ada = (v) => v !== null && v !== undefined && String(v).trim() !== '';
 export const KOLOM_LENGKAP = ['nama_pemegang_hak', 'letak_tanah', 'luas_m2', 'harga_rp_per_ru'];
 
 export function statusDokumen(r) {
-  if (KOLOM_LENGKAP.some((k) => !ada(r[k])) || (!ada(r.no_shm) && !ada(r.no_petok))) return 'Data belum lengkap';
+  // harga dianggap terisi bila ada keterangan (Wakaf / Sebagian wakaf / Tidak diketahui)
+  if (KOLOM_LENGKAP.some((k) => !ada(r[k]) && !(k === 'harga_rp_per_ru' && ada(r.keterangan_harga))) || (!ada(r.no_shm) && !ada(r.no_petok))) return 'Data belum lengkap';
   return ada(r.no_shm) ? 'SHM' : 'Petok';
 }
 
